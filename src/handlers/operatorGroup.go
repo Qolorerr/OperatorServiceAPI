@@ -3,8 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/google/uuid"
+	"log"
 	"net/http"
 	"operator_text_channel/src/services"
+	"time"
 )
 
 func GetGroups(service *services.Service) http.HandlerFunc {
@@ -19,6 +21,12 @@ func GetGroups(service *services.Service) http.HandlerFunc {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		cacheKey := r.URL.RequestURI()
+		err = service.RDB.Set(service.CTX, cacheKey, jsonResponse, time.Minute*5).Err()
+		if err != nil {
+			log.Println("Error caching response:", err)
 		}
 
 		w.Header().Set("Content-Type", "application/json")

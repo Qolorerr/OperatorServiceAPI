@@ -28,6 +28,7 @@ type Tag struct {
 type Appeal struct {
 	ID        uuid.UUID `json:"id" gorm:"column:id"`
 	UserId    uuid.UUID `json:"userId" gorm:"column:user_id"`
+	Weight    int32     `json:"weight" gorm:"column:weight"`
 	CreatedAt time.Time `json:"createdAt" gorm:"column:created_at"`
 	UpdatedAt time.Time `json:"updatedAt" gorm:"column:updated_at"`
 	Tags      []Tag     `json:"tags" gorm:"-"`

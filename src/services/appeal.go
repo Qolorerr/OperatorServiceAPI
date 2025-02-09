@@ -25,7 +25,7 @@ func (s *Service) GetAppealsByUserId(userIdStr string) ([]Appeal, error) {
 	return convertAppealsToExport(appeals), nil
 }
 
-func (s *Service) CreateAppeal(userIdStr string, tagIdsStr []string) (*Appeal, error) {
+func (s *Service) CreateAppeal(userIdStr string, weight int32, tagIdsStr []string) (*Appeal, error) {
 	userId, err := uuid.Parse(userIdStr)
 	if err != nil {
 		return nil, errors.New("invalid user id")
@@ -41,6 +41,7 @@ func (s *Service) CreateAppeal(userIdStr string, tagIdsStr []string) (*Appeal, e
 
 	var appeal models.Appeal
 	appeal.UserId = userId
+	appeal.Weight = weight
 	appeal.CreatedAt = time.Now()
 	appeal.UpdatedAt = time.Now()
 
@@ -66,7 +67,13 @@ func (s *Service) CreateAppeal(userIdStr string, tagIdsStr []string) (*Appeal, e
 		return nil, err
 	}
 
-	var exportAppeal = Appeal{ID: appeal.ID, UserId: appeal.UserId, CreatedAt: appeal.CreatedAt, UpdatedAt: appeal.UpdatedAt}
+	var exportAppeal = Appeal{
+		ID:        appeal.ID,
+		UserId:    appeal.UserId,
+		Weight:    appeal.Weight,
+		CreatedAt: appeal.CreatedAt,
+		UpdatedAt: appeal.UpdatedAt,
+	}
 	err = s.loadAppealTags(&exportAppeal)
 	if err != nil {
 		return nil, err

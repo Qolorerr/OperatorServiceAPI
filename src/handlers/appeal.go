@@ -46,7 +46,7 @@ func CreateAppeal(service *services.Service) http.HandlerFunc {
 			return
 		}
 
-		appeal, err := service.CreateAppeal(requestAppeal.UserId, requestAppeal.TagIds)
+		appeal, err := service.CreateAppeal(requestAppeal.UserId, requestAppeal.Weight, requestAppeal.TagIds)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

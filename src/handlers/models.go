@@ -6,6 +6,7 @@ type requestCreateTag struct {
 
 type requestCreateAppeal struct {
 	UserId string   `json:"userId"`
+	Weight int32    `json:"weight"`
 	TagIds []string `json:"tagIds"`
 }
 

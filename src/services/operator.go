@@ -57,23 +57,24 @@ func (s *Service) GetOperatorTags(idStr string) ([]Tag, error) {
 
 func (s *Service) getOperatorAppealsQuery(id uuid.UUID) *gorm.DB {
 	operatorTagIdsQuery := s.DB.Model(&models.Operator{}).
-		Select("gtl.tag_id AS id").
+		Select("gtl.tag_id").
 		Joins("LEFT JOIN operator_group_links AS ogl ON ogl.operator_id = operators.id AND ogl.deleted = false").
 		Joins("LEFT JOIN operator_groups AS og ON og.id = ogl.group_id AND og.deleted = false").
 		Joins("LEFT JOIN group_tag_links AS gtl ON gtl.group_id = og.id AND gtl.deleted = false").
 		Where("operators.deleted = false AND operators.id = ?", id)
 	unsuitableAppealTagIdsQuery := s.DB.Model(&models.AppealTagLink{}).
-		Select(1).
+		Select("1").
 		Where("appeal_tag_links.deleted = false AND appeal_tag_links.appeal_id = appeals.id").
 		Where("appeal_tag_links.tag_id NOT IN (?)", operatorTagIdsQuery)
 	tx := s.DB.Model(&models.Appeal{}).
 		Select("appeals.*").
 		Where("appeals.deleted = false").
-		Where("NOT EXISTS (?)", unsuitableAppealTagIdsQuery)
+		Where("NOT EXISTS (?)", unsuitableAppealTagIdsQuery).
+		Order("appeals.weight DESC, appeals.created_at")
 	return tx
 }
 
-func (s *Service) GetOperatorAppeals(idStr string) ([]Appeal, error) {
+func (s *Service) GetOperatorAppeals(idStr string, limit int) ([]Appeal, error) {
 	var appeals []models.Appeal
 
 	id, err := uuid.Parse(idStr)
@@ -81,6 +82,7 @@ func (s *Service) GetOperatorAppeals(idStr string) ([]Appeal, error) {
 		return nil, errors.New("invalid operator id")
 	}
 	tx := s.getOperatorAppealsQuery(id).
+		Limit(limit).
 		Scan(&appeals)
 	if tx.Error != nil {
 		return nil, tx.Error

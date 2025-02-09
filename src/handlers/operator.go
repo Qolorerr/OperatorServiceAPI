@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"operator_text_channel/src/services"
+	"strconv"
 )
 
 func CreateOperator(service *services.Service) http.HandlerFunc {
@@ -82,6 +83,7 @@ func GetOperatorTags(service *services.Service) http.HandlerFunc {
 func GetOperatorAppeals(service *services.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
+		limitStr := r.URL.Query().Get("limit")
 		if id == "" {
 			http.Error(w, "Missing operator id", http.StatusBadRequest)
 			return
@@ -91,7 +93,17 @@ func GetOperatorAppeals(service *services.Service) http.HandlerFunc {
 			return
 		}
 
-		appeals, err := service.GetOperatorAppeals(id)
+		limit := -1
+		if limitStr != "" {
+			l, err := strconv.Atoi(limitStr)
+			if err != nil {
+				http.Error(w, "Invalid pagination", http.StatusBadRequest)
+				return
+			}
+			limit = l
+		}
+
+		appeals, err := service.GetOperatorAppeals(id, limit)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
